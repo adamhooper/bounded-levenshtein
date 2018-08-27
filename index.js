@@ -51,27 +51,32 @@ function boundedLevenshtein (a, b, maxDistance) {
     return Infinity
   }
 
-  // Slice off matching beginnings -- they don't add to distance
-  const minLen = Math.min(a.length, b.length)
-  const start = nEqualCharsAtStart(a, b, minLen)
-
-  // Ditto matching endings
-  const end = nEqualCharsAtEnd(a, b, minLen - start)
-
-  // Exit really quickly if strings have common beginning+end
-  if (start + end === minLen) {
-    const d = Math.max(a.length, b.length) - start - end
-    return d <= maxDistance ? d : Infinity
-  }
-
-  // Simplify: ensure a.length <= b.length by swapping
+  // Simplify: ensure a is always the shorter string.
+  // This means we can avoid some Math.max, Math.min or Math.abs calls; it
+  // also makes fewer outer-loop iterations in the actual Levenshtein part
+  // of the algorithm.
   if (a.length > b.length) {
     const t = a
     a = b
     b = t
   }
-  const aLen = a.length - start - end
+
+  let aLen = a.length
+
+  // Slice off matching beginnings -- they don't add to distance
+  const start = nEqualCharsAtStart(a, b, aLen)
+  aLen -= start
+
+  // Ditto matching endings
+  const end = nEqualCharsAtEnd(a, b, aLen)
+
+  aLen -= end
   const bLen = b.length - start - end // the longer length
+
+  // Exit really quickly if strings have common beginning+end
+  if (aLen === 0) {
+    return bLen > maxDistance ? Infinity : bLen
+  }
 
   // Run .charCodeAt() once, instead of in the inner loop
   for (let i = 0; i < bLen; i++) {

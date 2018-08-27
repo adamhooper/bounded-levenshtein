@@ -70,21 +70,21 @@ function boundedLevenshtein (a, b, maxDistance) {
 
     // Calculate v1 (current distances) from previous row v0
     // First distance is delete (i + 1) chars from a to match empty b
-    let temp = i - 1
     buffer[0] = i
+    let above = i - 1
 
-    for (let j = 1; j <= bLen; j++) {
-      const insertDeleteCost = Math.min(buffer[j - 1], buffer[j]) + 1
-      const substituteCost = (ac === bChars[j - 1]) ? 0 : 1
+    for (let j = 0; j < bLen; j++) {
+      const insertDeleteCost = Math.min(buffer[j], buffer[j + 1]) + 1
+      const substituteCost = (ac === bChars[j]) ? 0 : 1
 
-      const d = Math.min(insertDeleteCost, temp + substituteCost)
+      const d = Math.min(insertDeleteCost, above + substituteCost)
 
       if (d < rowMinimum) {
         rowMinimum = d
       }
 
-      temp = buffer[j]
-      buffer[j] = d
+      above = buffer[j + 1]
+      buffer[j + 1] = d
     }
 
     if (rowMinimum > maxDistance) {

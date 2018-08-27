@@ -51,7 +51,7 @@ function boundedLevenshtein (a, b, maxDistance) {
 
   // Exit really quickly if strings have common beginning+end
   if (start + end === minLen) {
-    const d = Math.abs(a.length - b.length)
+    const d = Math.max(a.length, b.length) - start - end
     return d <= maxDistance ? d : Infinity
   }
 

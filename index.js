@@ -97,16 +97,26 @@ function boundedLevenshtein (a, b, maxDistance) {
     _buffer[i] = i
   }
 
+  // Idea copied from talisman's max-distance Levenshtein: we can avoid some
+  // comparisons that would only ever lead to distance > maxDistance.
+  const offset = maxDistance - (bLen - aLen)
+  let jStart = 0
+  let jEnd = maxDistance
+
   for (let i = 0; i < aLen; i++) {
     let rowMinimum = bLen
     const ac = a.charCodeAt(nPrefix + i)
+
+    // We don't need to compare the _entire_
+    if (i > offset) jStart += 1
+    if (jEnd < bLen) jEnd += 1
 
     // Calculate v1 (current distances) from previous row v0
     // First distance is delete (i + 1) chars from a to match empty b
     _buffer[0] = i + 1
     let above = i
 
-    for (let j = 0; j < bLen; j++) {
+    for (let j = jStart; j < jEnd; j++) {
       const insertDeleteCost = Math.min(_buffer[j], _buffer[j + 1]) + 1
       const substituteCost = (ac === _bChars[j]) ? 0 : 1
 

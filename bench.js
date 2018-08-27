@@ -45,6 +45,10 @@ suite('50 paragraphs, length max=500 min=240 avr=372.5', function() {
     }
   });
 
+  bench('bounded-levenshtein', function() {
+    paragraphBench(boundedLevenshtein);
+  });
+
   bench('js-levenshtein', function() {
     paragraphBench(levenshtein);
   });
@@ -64,10 +68,6 @@ suite('50 paragraphs, length max=500 min=240 avr=372.5', function() {
   bench('fast-levenshtein', function() {
     paragraphBench(fastLevenshtein);
   });
-
-  bench('bounded-levenshtein', function() {
-    paragraphBench(boundedLevenshtein);
-  });
 });
 
 suite('100 sentences, length max=170 min=6 avr=57.5', function() {
@@ -77,6 +77,10 @@ suite('100 sentences, length max=170 min=6 avr=57.5', function() {
     for (var i = 0; i < sentences.length; i++) {
       _t += sentences[i].toLowerCase().length;
     }
+  });
+
+  bench('bounded-levenshtein', function() {
+    sentenceBench(boundedLevenshtein);
   });
 
   bench('js-levenshtein', function() {
@@ -97,10 +101,6 @@ suite('100 sentences, length max=170 min=6 avr=57.5', function() {
 
   bench('fast-levenshtein', function() {
     sentenceBench(fastLevenshtein);
-  });
-
-  bench('bounded-levenshtein', function() {
-    sentenceBench(boundedLevenshtein);
   });
 });
 
@@ -135,10 +135,6 @@ suite('2000 words, length max=20 min=3 avr=9.5', function() {
 
   bench('fast-levenshtein', function() {
     wordBench(fastLevenshtein);
-  });
-
-  bench('bounded-levenshtein', function() {
-    wordBench(boundedLevenshtein);
   });
 });
 

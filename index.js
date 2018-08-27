@@ -42,6 +42,12 @@ function boundedLevenshtein (a, b, maxDistance) {
     return Math.min(bLen, maxDistance + 1)
   }
 
+  const bChars = new Uint16Array(bLen)
+  // Run .charCodeAt() once, instead of in the inner loop
+  for (let i = 0; i < bLen; i++) {
+    bChars[i] = b.charCodeAt(i)
+  }
+
   const buffer = new Uint8Array(bLen + 1)
   // Initialize buffer
   for (let i = 0; i <= bLen; i++) {
@@ -50,6 +56,7 @@ function boundedLevenshtein (a, b, maxDistance) {
 
   for (let i = 1; i < aLen + 1; i++) {
     let rowMinimum = bLen
+    const ac = a.charCodeAt(i - 1)
 
     // Calculate v1 (current distances) from previous row v0
     // First distance is delete (i + 1) chars from a to match empty b
@@ -59,7 +66,7 @@ function boundedLevenshtein (a, b, maxDistance) {
     for (let j = 1; j <= bLen; j++) {
       const insertionCost = buffer[j] + 1
       const deletionCost = buffer[j - 1] + 1
-      const substitutionCost = (a.charCodeAt(i - 1) === b.charCodeAt(j - 1)) ? 0 : 1
+      const substitutionCost = (ac === bChars[j - 1]) ? 0 : 1
 
       const d = Math.min(deletionCost, insertionCost, temp + substitutionCost)
 

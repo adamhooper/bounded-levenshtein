@@ -22,6 +22,12 @@ function nEqualCharsAtEnd(a, b, max) {
   return max
 }
 
+// Since JS is synchronous, we can allocate the buffer once and keep it around
+// forever. This will "leak" an array of maximum length maxDistance ... but
+// it will prevent a bunch of array resizing and it will negate garbage
+// collection entirely.
+const _buffer = []
+
 /**
  * Returns the Levenshtein edit distance between a and b, to a maximum of
  * `maxDistance`.
@@ -72,10 +78,9 @@ function boundedLevenshtein (a, b, maxDistance) {
     bChars.push(b.charCodeAt(start + i))
   }
 
-  const buffer = []
   // Initialize buffer
   for (let i = 0; i <= bLen; i++) {
-    buffer.push(i)
+    _buffer[i] = i
   }
 
   for (let i = 0; i < aLen; i++) {
@@ -84,11 +89,11 @@ function boundedLevenshtein (a, b, maxDistance) {
 
     // Calculate v1 (current distances) from previous row v0
     // First distance is delete (i + 1) chars from a to match empty b
-    buffer[0] = i + 1
+    _buffer[0] = i + 1
     let above = i
 
     for (let j = 0; j < bLen; j++) {
-      const insertDeleteCost = Math.min(buffer[j], buffer[j + 1]) + 1
+      const insertDeleteCost = Math.min(_buffer[j], _buffer[j + 1]) + 1
       const substituteCost = (ac === bChars[j]) ? 0 : 1
 
       const d = Math.min(insertDeleteCost, above + substituteCost)
@@ -97,8 +102,8 @@ function boundedLevenshtein (a, b, maxDistance) {
         rowMinimum = d
       }
 
-      above = buffer[j + 1]
-      buffer[j + 1] = d
+      above = _buffer[j + 1]
+      _buffer[j + 1] = d
     }
 
     if (rowMinimum > maxDistance) {
@@ -108,7 +113,7 @@ function boundedLevenshtein (a, b, maxDistance) {
     }
   }
 
-  return buffer[bLen]
+  return _buffer[bLen]
 }
 
 module.exports = boundedLevenshtein

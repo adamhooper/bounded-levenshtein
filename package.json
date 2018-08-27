@@ -1,0 +1,38 @@
+{
+  "name": "bounded-levenshtein",
+  "version": "0.0.1",
+  "description": "Super-fast Levenshtein edit distance with a maximum",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava",
+    "bench": "matcha bench.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CJWorkbench/bounded-levenshtein.git"
+  },
+  "keywords": [
+    "Levenshtein",
+    "edit",
+    "distance",
+    "text",
+    "string",
+    "comparison"
+  ],
+  "author": "Adam Hooper <adam@adamhooper.com>",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/CJWorkbench/bounded-levenshtein/issues"
+  },
+  "homepage": "https://github.com/CJWorkbench/bounded-levenshtein#readme",
+  "devDependencies": {
+    "ava": "^0.25.0",
+    "fast-levenshtein": "^2.0.6",
+    "jest": "^23.5.0",
+    "js-levenshtein": "file:js-levenshtein",
+    "leven": "^2.1.0",
+    "levenshtein-edit-distance": "^2.0.2",
+    "matcha": "^0.7.0",
+    "talisman": "^0.20.0"
+  }
+}

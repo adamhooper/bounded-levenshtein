@@ -93,12 +93,16 @@ function boundedLevenshtein (a, b, maxDistance) {
   }
 
   // Initialize buffer
-  for (let i = 0; i <= bLen; i++) {
-    _buffer[i] = i
+  // Unlike in Wikipedia's Levenshtein algorithm, we set buffer to length bLen,
+  // not bLen+1. We dont insert the first element because we can infer it from
+  // `i` in our main Levenshtein loop
+  for (let i = 0; i < bLen; i++) {
+    _buffer[i] = i + 1
   }
 
   // Idea copied from talisman's max-distance Levenshtein: we can avoid some
   // comparisons that would only ever lead to distance > maxDistance.
+  if (maxDistance > bLen) maxDistance = bLen
   const offset = maxDistance - (bLen - aLen)
   let jStart = 0
   let jEnd = maxDistance
@@ -113,12 +117,14 @@ function boundedLevenshtein (a, b, maxDistance) {
 
     // Calculate v1 (current distances) from previous row v0
     // First distance is delete (i + 1) chars from a to match empty b
-    _buffer[0] = i + 1
     let above = i
+    let left = i + 1
 
     for (let j = jStart; j < jEnd; j++) {
-      const insertDeleteCost = Math.min(_buffer[j], _buffer[j + 1]) + 1
-      const substituteCost = (ac === _bChars[j]) ? 0 : 1
+      const bc = _bChars[j]
+
+      const insertDeleteCost = Math.min(left, _buffer[j]) + 1
+      const substituteCost = (ac === bc) ? 0 : 1
 
       const d = Math.min(insertDeleteCost, above + substituteCost)
 
@@ -126,8 +132,8 @@ function boundedLevenshtein (a, b, maxDistance) {
         rowMinimum = d
       }
 
-      above = _buffer[j + 1]
-      _buffer[j + 1] = d
+      above = _buffer[j]
+      left = _buffer[j] = d
     }
 
     if (rowMinimum > maxDistance) {
@@ -137,7 +143,7 @@ function boundedLevenshtein (a, b, maxDistance) {
     }
   }
 
-  return _buffer[bLen]
+  return _buffer[bLen - 1]
 }
 
 module.exports = boundedLevenshtein

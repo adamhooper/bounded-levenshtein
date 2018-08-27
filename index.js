@@ -37,6 +37,8 @@ function boundedLevenshtein (a, b, maxDistance) {
   // https://bitbucket.org/clearer/iosifovich/src/1d27393502137b1ba788822f62f7155eb0c37744/levenshtein.h
   // for the best implementation.
 
+  if (a === b) return 0
+
   // Early, redundant but super-fast optimization
   if (Math.abs(a.length - b.length) > maxDistance) {
     return Infinity
@@ -76,14 +78,14 @@ function boundedLevenshtein (a, b, maxDistance) {
     buffer.push(i)
   }
 
-  for (let i = 1; i < aLen + 1; i++) {
+  for (let i = 0; i < aLen; i++) {
     let rowMinimum = bLen
-    const ac = a.charCodeAt(start + i - 1)
+    const ac = a.charCodeAt(start + i)
 
     // Calculate v1 (current distances) from previous row v0
     // First distance is delete (i + 1) chars from a to match empty b
-    buffer[0] = i
-    let above = i - 1
+    buffer[0] = i + 1
+    let above = i
 
     for (let j = 0; j < bLen; j++) {
       const insertDeleteCost = Math.min(buffer[j], buffer[j + 1]) + 1

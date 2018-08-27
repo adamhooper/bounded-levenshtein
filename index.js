@@ -44,7 +44,10 @@ function boundedLevenshtein (a, b, maxDistance) {
   // https://bitbucket.org/clearer/iosifovich/src/1d27393502137b1ba788822f62f7155eb0c37744/levenshtein.h
   // for the best implementation.
 
+  // Early optimizations
   if (a === b) return 0
+  if (!a.length) return b.length > maxDistance ? Infinity : b.length
+  if (!b.length) return a.length > maxDistance ? Infinity : a.length
 
   // Early, redundant but super-fast optimization
   if (Math.abs(a.length - b.length) > maxDistance) {
@@ -62,25 +65,31 @@ function boundedLevenshtein (a, b, maxDistance) {
   }
 
   let aLen = a.length
+  let bLen = b.length
 
-  // Slice off matching beginnings -- they don't add to distance
-  const start = nEqualCharsAtStart(a, b, aLen)
-  aLen -= start
+  // Ignore common suffix -- it does not contribute to distance
+  const nSuffix = nEqualCharsAtEnd(a, b, aLen)
+  aLen -= nSuffix
+  bLen -= nSuffix
 
-  // Ditto matching endings
-  const end = nEqualCharsAtEnd(a, b, aLen)
+  // Exit really quickly if B is just A plus a prefix
+  if (aLen === 0) {
+    return bLen > maxDistance ? Infinity : bLen
+  }
 
-  aLen -= end
-  const bLen = b.length - start - end // the longer length
+  // Slice off matching prefix -- they don't add to distance
+  const nPrefix = nEqualCharsAtStart(a, b, aLen)
+  aLen -= nPrefix
+  bLen -= nPrefix
 
-  // Exit really quickly if strings have common beginning+end
+  // Exit really quickly if B is just A plus a prefix and suffix
   if (aLen === 0) {
     return bLen > maxDistance ? Infinity : bLen
   }
 
   // Run .charCodeAt() once, instead of in the inner loop
   for (let i = 0; i < bLen; i++) {
-    _bChars[i] = b.charCodeAt(start + i)
+    _bChars[i] = b.charCodeAt(nPrefix + i)
   }
 
   // Initialize buffer
@@ -90,7 +99,7 @@ function boundedLevenshtein (a, b, maxDistance) {
 
   for (let i = 0; i < aLen; i++) {
     let rowMinimum = bLen
-    const ac = a.charCodeAt(start + i)
+    const ac = a.charCodeAt(nPrefix + i)
 
     // Calculate v1 (current distances) from previous row v0
     // First distance is delete (i + 1) chars from a to match empty b

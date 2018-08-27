@@ -1,5 +1,27 @@
 'use strict'
 
+function nEqualCharsAtStart(a, b, max) {
+  for (let i = 0; i < max; i++) {
+    if (a.charCodeAt(i) !== b.charCodeAt(i)) {
+      return i
+    }
+  }
+
+  return max
+}
+
+function nEqualCharsAtEnd(a, b, max) {
+  const aLen = a.length
+  const bLen = b.length
+  for (let i = 0; i < max; i++) {
+    if (a.charCodeAt(aLen - i) !== b.charCodeAt(bLen - i)) {
+      return i
+    }
+  }
+
+  return max
+}
+
 /**
  * Returns the Levenshtein edit distance between a and b, to a maximum of
  * `maxDistance`.
@@ -20,32 +42,27 @@ function boundedLevenshtein (a, b, maxDistance) {
     return Infinity
   }
 
+  // Slice off matching beginnings -- they don't add to distance
+  const minLen = Math.min(a.length, b.length)
+  const start = nEqualCharsAtStart(a, b, minLen)
+
+  // Ditto matching endings
+  const end = nEqualCharsAtEnd(a, b, minLen - start)
+
+  // Exit really quickly if strings have common beginning+end
+  if (start + end === minLen) {
+    const d = Math.abs(a.length - b.length)
+    return d <= maxDistance ? d : Infinity
+  }
+
   // Simplify: ensure a.length <= b.length by swapping
   if (a.length > b.length) {
     const t = a
     a = b
     b = t
   }
-
-  // Slice off matching beginnings -- they don't contribute to distance
-  let minLen = Math.min(a.length, b.length)
-  let start
-  for (start = 0; start < minLen && a.charCodeAt(start) === b.charCodeAt(start); start++) {
-    // keep incrementing
-  }
-
-  let aLen = a.length - start
-  let bLen = b.length - start
-  // Slice off matching suffixes (all we need to do is fiddle with index)
-  while (aLen > 0 && a.charCodeAt(start + aLen - 1) === b.charCodeAt(start + bLen - 1)) {
-    aLen -= 1
-    bLen -= 1
-  }
-
-  // Exit really quickly if all of a matches parts of b
-  if (aLen === 0) {
-    return bLen > maxDistance ? Infinity : bLen
-  }
+  const aLen = a.length - start - end
+  const bLen = b.length - start - end // the longer length
 
   const bChars = []
   // Run .charCodeAt() once, instead of in the inner loop

@@ -4,7 +4,7 @@
  * Returns the Levenshtein edit distance between a and b, to a maximum of
  * `maxDistance`.
  *
- * If the distance is greater than `maxDistance`, returns `maxDistance + 1`
+ * If the distance is greater than `maxDistance`, returns Infinity.
  *
  * This special optimization speeds up calculations when the desired distance
  * is small and the string lengths aren't -- which is often, in practice.
@@ -26,6 +26,11 @@ function boundedLevenshtein (a, b, maxDistance) {
     b = t
   }
 
+  // Early (redundant but super-fast) optimization
+  if (a.length - b.length > maxDistance) {
+    return Infinity
+  }
+
   // Slice off matching beginnings -- they don't contribute to distance
   let i = 0
   while (i < a.length && a.charCodeAt(i) === b.charCodeAt(i)) {
@@ -34,12 +39,17 @@ function boundedLevenshtein (a, b, maxDistance) {
   a = a.slice(i)
   b = b.slice(i)
 
-  const aLen = a.length
-  const bLen = b.length
+  let aLen = a.length
+  let bLen = b.length
+  // Slice off matching suffixes (all we need to do is fiddle with index)
+  while (aLen > 0 && a.charCodeAt(aLen - 1) === b.charCodeAt(bLen - 1)) {
+    aLen -= 1
+    bLen -= 1
+  }
 
-  // Exit really quickly if zero length
+  // Exit really quickly if all of a matches parts of b
   if (aLen === 0) {
-    return Math.min(bLen, maxDistance + 1)
+    return bLen > maxDistance ? Infinity : bLen
   }
 
   const bChars = new Uint16Array(bLen)
@@ -81,7 +91,7 @@ function boundedLevenshtein (a, b, maxDistance) {
     if (rowMinimum > maxDistance) {
       // We never _subtract_ from any row values, so it's impossible for the
       // edit distance to be smaller than or equal to maxDistance.
-      return maxDistance + 1
+      return Infinity
     }
   }
 

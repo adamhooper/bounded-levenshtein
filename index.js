@@ -27,6 +27,7 @@ function nEqualCharsAtEnd(a, b, max) {
 // it will prevent a bunch of array resizing and it will negate garbage
 // collection entirely.
 const _buffer = []
+const _bChars = []
 
 /**
  * Returns the Levenshtein edit distance between a and b, to a maximum of
@@ -72,10 +73,9 @@ function boundedLevenshtein (a, b, maxDistance) {
   const aLen = a.length - start - end
   const bLen = b.length - start - end // the longer length
 
-  const bChars = []
   // Run .charCodeAt() once, instead of in the inner loop
   for (let i = 0; i < bLen; i++) {
-    bChars.push(b.charCodeAt(start + i))
+    _bChars[i] = b.charCodeAt(start + i)
   }
 
   // Initialize buffer
@@ -94,7 +94,7 @@ function boundedLevenshtein (a, b, maxDistance) {
 
     for (let j = 0; j < bLen; j++) {
       const insertDeleteCost = Math.min(_buffer[j], _buffer[j + 1]) + 1
-      const substituteCost = (ac === bChars[j]) ? 0 : 1
+      const substituteCost = (ac === _bChars[j]) ? 0 : 1
 
       const d = Math.min(insertDeleteCost, above + substituteCost)
 

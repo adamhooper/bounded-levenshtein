@@ -10,14 +10,15 @@
  * is small and the string lengths aren't -- which is often, in practice.
  */
 function boundedLevenshtein (a, b, maxDistance) {
-  if (maxDistance > 255) {
-    throw new Exception("Cannot set maxDistance greater than 255")
-  }
-
   // https://en.wikipedia.org/wiki/Levenshtein_distance#Iterative_with_two_matrix_rows
   // is the simple idea. Then go to
   // https://bitbucket.org/clearer/iosifovich/src/1d27393502137b1ba788822f62f7155eb0c37744/levenshtein.h
   // for the best implementation.
+
+  // Early, redundant but super-fast optimization
+  if (Math.abs(a.length - b.length) > maxDistance) {
+    return Infinity
+  }
 
   // Simplify: ensure a.length <= b.length by swapping
   if (a.length > b.length) {
@@ -26,23 +27,17 @@ function boundedLevenshtein (a, b, maxDistance) {
     b = t
   }
 
-  // Early (redundant but super-fast) optimization
-  if (a.length - b.length > maxDistance) {
-    return Infinity
-  }
-
   // Slice off matching beginnings -- they don't contribute to distance
-  let i = 0
-  while (i < a.length && a.charCodeAt(i) === b.charCodeAt(i)) {
-    i += 1
+  let minLen = Math.min(a.length, b.length)
+  let start
+  for (start = 0; start < minLen && a.charCodeAt(start) === b.charCodeAt(start); start++) {
+    // keep incrementing
   }
-  a = a.slice(i)
-  b = b.slice(i)
 
-  let aLen = a.length
-  let bLen = b.length
+  let aLen = a.length - start
+  let bLen = b.length - start
   // Slice off matching suffixes (all we need to do is fiddle with index)
-  while (aLen > 0 && a.charCodeAt(aLen - 1) === b.charCodeAt(bLen - 1)) {
+  while (aLen > 0 && a.charCodeAt(start + aLen - 1) === b.charCodeAt(start + bLen - 1)) {
     aLen -= 1
     bLen -= 1
   }
@@ -52,21 +47,21 @@ function boundedLevenshtein (a, b, maxDistance) {
     return bLen > maxDistance ? Infinity : bLen
   }
 
-  const bChars = new Uint16Array(bLen)
+  const bChars = []
   // Run .charCodeAt() once, instead of in the inner loop
   for (let i = 0; i < bLen; i++) {
-    bChars[i] = b.charCodeAt(i)
+    bChars.push(b.charCodeAt(start + i))
   }
 
-  const buffer = new Uint8Array(bLen + 1)
+  const buffer = []
   // Initialize buffer
   for (let i = 0; i <= bLen; i++) {
-    buffer[i] = i
+    buffer.push(i)
   }
 
   for (let i = 1; i < aLen + 1; i++) {
     let rowMinimum = bLen
-    const ac = a.charCodeAt(i - 1)
+    const ac = a.charCodeAt(start + i - 1)
 
     // Calculate v1 (current distances) from previous row v0
     // First distance is delete (i + 1) chars from a to match empty b

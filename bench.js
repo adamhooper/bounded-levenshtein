@@ -9,6 +9,8 @@ const boundedLevenshtein = require('./index');
 
 const maxDistance = 10 // a pretty pessimistic distance, in practice
 
+function limitedTalisman (a, b, d) { return talisman.limited(d, a, b) }
+
 function wordBench(fn)
 {
   for (var i = 0; i + 1 < words.length; i += 2) {
@@ -54,7 +56,7 @@ suite('50 paragraphs, length max=500 min=240 avr=372.5', function() {
   });
 
   bench('talisman', function() {
-    paragraphBench(talisman);
+    paragraphBench(limitedTalisman);
   });
 
   bench('levenshtein-edit-distance', function() {
@@ -88,7 +90,7 @@ suite('100 sentences, length max=170 min=6 avr=57.5', function() {
   });
 
   bench('talisman', function() {
-    sentenceBench(talisman);
+    sentenceBench(limitedTalisman);
   });
 
   bench('levenshtein-edit-distance', function() {
